@@ -1,0 +1,66 @@
+{% extends 'basicInfo/teacher_base.html' %}
+{% load staticfiles %}
+
+{% block body %}
+		
+<!-- Custom CSS -->
+<!-- content -->
+<div class="content">
+	<div id="wrapper">
+        <div id="page-wrapper" style="min-height: 58px;">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">学生评价</h1>
+                </div>
+            </div>
+            <div class="row">
+                <form role="form">
+                    <div class="col-lg-6">
+                        <form role="form">
+                        	<label for="disabledSelect">课程名称</label>
+                            <div class="form-group">
+                                <select class="form-control" name="metric">
+                                    {% for course_name in course_names %}
+                                    <option value={{course_name}}>{{course_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                    	</form>
+            		</div>
+            	</form>
+        	</div>
+        	<table class="table table-hover table-condensed" id="kexuan-tab">
+        		<thead>
+        			<tr>
+            			<th>课程名称</th>
+            			<th>课程代码</th>
+            			<th>学生打分</th>
+            			<th>学生评价</th>
+        			</tr>
+        		</thead>
+        		<tbody>
+       				{% for comment in comments %}
+        			<form role="form">
+            			<tr>
+                			<td>{{comment.course_name}}</td>
+                			<td>{{comment.course_id}}</td>
+                			<td>{{comment.course_grade}}</td>
+                			<td>{{comment.course_comment}}</td>
+            			</tr>
+        			</form>
+        			{% endfor %}
+        		</tbody>
+    		</table>
+	 		</div>
+		<!-- /#page-wrapper -->
+	</div>
+	<!-- /#wrapper -->
+</div>
+<!--content-ends-->
+
+<!-- line23: course_name, course_names -->
+<!-- line43 - 48: comment, coments -->
+
+{% endblock %}
+
+

@@ -1,0 +1,431 @@
+{% load static %}
+{% load extratags %}
+<!DOCTYPE HTML>
+<html>
+<script>
+    let cur_test = {
+        name: null,
+        subject: null,
+        start_time: null,
+        end_time: null,
+        questions: [],
+    }
+
+    let pkval = 1;
+    const data = {
+        "problem_search_url": "{% url 'online_test:problem_search' %}",
+        "problem_detail_url": "{% url 'online_test:problem_single' %}",
+        "test_problem_add_url": "{% url 'online_test:test_add' %}",
+        "test_problem_delete_url": "{% url 'online_test:test_del' 1 %}",
+        "static_choice_detail_url": "{% url 'online_test:static_choice' 1 %}",
+        "static_judge_detail_url": "{% url 'online_test:static_judge' 1%}",
+        "auto_test_add_url": "{% url 'online_test:test_gerner'  %}",
+        "test_add_url": "{% url 'online_test:test_add'  %}",
+        "test": cur_test,
+    }
+</script>
+<head>
+    <title>浙江大学教务中心</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="keywords" content="Gretong Responsive web template, Bootstrap Web Templates, Flat Web Templates, Android Compatible web template,
+Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyEricsson, Motorola web design"/>
+    <script type="application/x-javascript"> addEventListener("load", function () {
+        setTimeout(hideURLbar, 0);
+    }, false);
+
+    function hideURLbar() {
+        window.scrollTo(0, 1);
+    } </script>
+    <!-- Bootstrap Core CSS -->
+    <link href="{% static 'online_test/css/bootstrap.min.css' %}" rel='stylesheet' type='text/css'/>
+    <!-- Custom CSS -->
+    <link href="{% static 'online_test/css/style.css' %}" rel='stylesheet' type='text/css'/>
+    <!-- Graph CSS -->
+    <link href="{% static 'online_test/css/font-awesome.css' %}" rel="stylesheet">
+    <!-- jQuery -->
+    <link href='https://fonts.googleapis.com/css?family=Roboto:700,500,300,100italic,100,400' rel='stylesheet'
+          type='text/css'/>
+    <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+    <!-- lined-icons -->
+    <link rel="stylesheet" href="{% static 'online_test/css/icon-font.min.css' %}" type='text/css'/>
+    <script src="{% static 'online_test/js/simpleCart.min.js' %}"></script>
+    <script src="{% static 'online_test/js/amcharts.js' %}"></script>
+    <script src="{% static 'online_test/js/serial.js' %}"></script>
+    <script src="{% static 'online_test/js/light.js' %}"></script>
+    <!-- //lined-icons -->
+    <script src="{% static 'online_test/js/jquery-1.10.2.min.js' %}"></script>
+
+    <script>
+        $.ajaxSetup({
+            headers: {"X-CSRFToken": '{{csrf_token}}'}
+        });
+    </script>
+    <script src="{% static 'online_test/js/test_generation.js' %}"></script>
+    <script src="{% static 'online_test/js/commons.js' %}"></script>
+
+    <script>
+        $(function () {
+            $("#tabs").tabs();
+        });
+    </script>
+</head>
+
+<body>
+<div class="left-content">
+    <div class="inner-content">
+        <div class="header-section">
+            <!-- top_bg -->
+            <div class="top_bg">
+                <div class="header_top">
+                    <div class="top_right">
+                        <ul>
+                            <li>
+                                <a href="#">浙江大学教务中心</a>
+                            </li>-
+                            <li>
+                                <a href="/basic/teacher">首页</a>
+                            </li>-
+                            <li>
+                                <a href="/online_test/subjects/teacher">在线测试</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="top_left">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#" style="color:white">
+                                <i class="fa fa-user fa-fw"></i>
+                                <i id="account_id" class="fa fa-caret-down">&nbsp;&nbsp;{{ account.account_id }}</i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user">
+                                <li>
+                                    <a href="/basic/login">
+                                        <i class="fa fa-sign-out fa-fw"></i>登出</a>
+                                </li>
+                                <li>
+                                    <a href="/basic/teacher_index">
+                                        <i class="fa fa-cog fa-fw"></i>设置</a>
+                                </li>
+                            </ul>
+                            <!-- /.dropdown-user -->
+                        </li>
+                    </div>
+                    <div class="clearfix"> </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            {% if account.type == 0 %} {% include 'basicInfo/student_menu.html' %} {% elif account.type == 1 %} {% include 'basicInfo/teacher_menu.html'%}
+            {% elif account.type == 2 %} {% include 'basicInfo/admin_menu.html' %} {% endif %}
+            <!-- //header-ends -->
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="content">
+            <div class="women_main">
+                <font size="6" color="black">试卷生成</font>
+                <div class="content">
+                    <div>
+                        <ul id="tabs" class="nav nav-tabs">
+                            <li class="active" id="TF_list">
+                                <a href="#problem-search" data-toggle="tab">
+                                    <font color="black">试题查找</font>
+                                </a>
+                            </li>
+                            <li id="choice_list">
+                                <a href="#auto-generate" data-toggle="tab">
+                                    <font color="black">试卷自动生成</font>
+                                </a>
+                            </li>
+                            <li id="choice_list">
+                                <a href="#manual-generate" data-toggle="tab">
+                                    <font color="black">试卷手动生成</font>
+                                </a>
+                            </li>
+                            </li>
+                            <li id="choice_list">
+                                <a href="#test-content" data-toggle="tab">
+                                    <font color="black">试卷内容</font>
+                                </a>
+                            </li>
+                        </ul>
+                        <div id="tabs_content" class="tab-content">
+                            <div class="tab-pane fade in active" id="problem-search">
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4" style="margin-top:10px; positon:relative">
+                                        <span class="input-group">科目</span>
+                                         <select id="subject" class="subject">
+                            </select>
+                                    </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="input-group col-md-4"
+                                         style="margin-top :10px; positon:relative">
+                                        <span class="input-group">章节</span>
+                                         <select  id="chapter" class="chapter">
+                            </select>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4" style="margin-top :10px; positon:relative">
+                                        <span class="input-group">知识点</span>
+                                         <select class="knowledge-point" id="knowledge-point">
+                            </select>
+                                        </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-12" style="margin-top: 20px"> <span
+                                        class="input-group-btn text-center">
+                                    <button id="btn-search-problem" class="btn btn-primary btn-search">查找</button>
+                                </span></div>
+                                <div class="row col-md-12">
+                                    <div id="tabs_content" class="tab-content">
+                                        <div>
+                                            <div class="row">
+                                                <h3>查询结果</h3>
+                                                <div class="row">
+                                                    <div class="col-sm-12" style="border-right-style: inset">
+                                                        <div class="TF_problems_list">
+                                                            <div>
+                                                                <table style="border-collapse:separate; border-spacing:0px 10px;">
+                                                                    <thead>
+                                                                    <tr>
+                                                                        <th width="150">题型</th>
+                                                                        <th width="150">内容</th>
+                                                                        <th width="150">科目</th>
+                                                                        <th width="150">章节</th>
+                                                                        <th width="150">知识点</th>
+                                                                        <td width="100"></td>
+                                                                        <td></td>
+                                                                    </tr>
+                                                                    </thead>
+                                                                    <tbody id="problem-table-body">
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade in" id="auto-generate">
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4" style="margin-top:10px; positon:relative">
+                                        <span class="input-group">试卷名称</span>
+                                        <input id="auto-test-name" type="text" class="form-control"
+                                               placeholder="请输入试卷名称"/>
+                                    </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="input-group col-md-4" style="margin-top:10px; positon:relative">
+                                        <span class="input-group">科目</span>
+                                        <select id="auto-test-subject" class="subject"></select>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4"
+                                         style="margin-top :10px; margin-bottom: 10px;positon:relative">
+                                        <span class="input-group">开始时间</span>
+                                        <input id="auto-test-start-time" type="date" class="form-control"
+                                               placeholder="请输入开始时间"/>
+                                    </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="input-group col-md-4"
+                                         style="margin-top :10px; margin-bottom: 10px;positon:relative">
+                                        <span class="input-group">结束时间</span>
+                                        <input id="auto-test-end-time" type="date" class="form-control"
+                                               placeholder="请输入结束时间"/>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4"
+                                         style="margin-top :10px; margin-bottom: 10px;positon:relative">
+                                        <span class="input-group">章节</span>
+                                        <select id="auto-test-chapter" class="chapter"></select>
+                                    </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="input-group col-md-4"
+                                         style="margin-top :10px; margin-bottom: 10px;positon:relative">
+                                        <span class="input-group">知识点</span>
+                                         <select id="auto-test-knowledge-point" class="knowledge-point"></select>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4" style="margin-top :10px; positon:relative">
+                                        <span class="input-group-addon">选择题数目</span>
+                                        <input id="auto-test-choice-num" type="text" class="form-control"
+                                               placeholder="10"/>
+                                    </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="input-group col-md-4" style="margin-top:10px; positon:relative">
+                                        <span class="input-group-addon">判断题数目</span>
+                                        <input id="auto-test-judge-num'" type="text" class="form-control"
+                                               placeholder="10"/>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-12" style="margin-top: 20px">
+                                    <span class="input-group-btn text-center">
+                                        <button id="init-auto-test" class="btn btn-primary btn-search">创建</button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade in" id="manual-generate">
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4" style="margin-top:10px; positon:relative">
+                                        <span class="input-group">试卷名称</span>
+                                        <input id="manual-test-name" type="text" class="form-control"
+                                               placeholder="请输入试卷名称"/>
+                                    </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="input-group col-md-4" style="margin-top:10px; positon:relative">
+                                        <span class="input-group">科目</span>
+                                        <select id="manual-test-subject" class="subject"></select>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-10 form-inline">
+                                    <div class="input-group col-md-4"
+                                         style="margin-top :10px; margin-bottom: 10px;positon:relative">
+                                        <span class="input-group-addon">开始时间</span>
+                                        <input id="manual-test-start-time" type="date" class="form-control"
+                                               placeholder="请输入开始时间"/>
+                                    </div>
+                                    <div class="input-group col-md-2"></div>
+                                    <div class="input-group col-md-4"
+                                         style="margin-top :10px; margin-bottom: 10px;positon:relative">
+                                        <span class="input-group-addon">结束时间</span>
+                                        <input id="manual-test-end-time" type="date" class="form-control"
+                                               placeholder="请输入结束时间"/>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row col-md-12" style="margin-top: 20px">
+                                    <span class="input-group-btn text-center">
+                                        <button id="init-manual-test" class="btn btn-primary btn-search">创建</button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade in" id="test-content">
+                                <div>
+                                    <div class="row-col-md-12">
+                                        <div class="col-sm-12" style="border-right-style: inset">
+                                            <div class="TF_problems_list">
+                                                <table style="border-collapse:separate; border-spacing:0px 10px;" id="test-content-table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="hidden"></th>
+                                                        <th width="150">题型</th>
+                                                        <th width="150">内容</th>
+                                                        <th width="150">科目</th>
+                                                        <th width="150">章节</th>
+                                                        <th width="150">知识点</th>
+                                                        <td width="100"></td>
+                                                        <td></td>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody id="test-content-table-body">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row col-md-12" style="margin-top: 20px">
+                                        <span class="input-group-btn text-center">
+                                            <button id="submit-test" class="btn btn-primary btn-search">提交</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="tabs_content" class="tab-content">
+                    <div class="tab-pane fade in active" id="TF_problem">
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-9" style="border-right-style: inset">
+                                <div class="TF_problems_list">
+                                </div>
+                            </div>
+
+                            <div class="col-sm-3">
+
+                                <div class="statics">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="choice_problem">
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-9" style="border-right-style: inset">
+                                <div class="choice_problems_list">
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="statics">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-menu">
+        <header class="logo1">
+            <a href="#" class="sidebar-icon"> <span class="fa fa-bars"></span> </a>
+        </header>
+        <div style="border-top:1px ridge rgba(255, 255, 255, 0.15)"></div>
+        <div class="menu">
+            <ul id="menu" >
+                <li><a href="/basic/teacher_information"><i class="lnr lnr-pencil"></i> <span>个人信息</span></a></li>
+                <!-- <li><a href="/basic/teacher_comment"><i class="fa fa-file-text-o"></i> <span>学生评价</span></a></li> -->
+                <li id="menu-academico" ><a href="#"><i class="fa fa-table"></i> <span> 课程信息</span> <span class="fa fa-angle-right" style="float: right"></span></a>
+                    <ul id="menu-academico-sub" >
+                        <li><a href="{% url 'courses' %}">课程搜索</a></li>
+                        <li id="menu-academico-avaliacoes" ><a href="/basic/teacher_course_regist">申请开课</a></li>
+                        <li id="menu-academico-avaliacoes" ><a href="/basic/teacher_course_open">申请开班</a></li>
+                        <li><a href="{% url 'teacher' %}">教师导出</a></li>
+                    </ul>
+                </li>
+                <li><a href="{% url 'calender' %}"><i class="fa fa-file-text-o"></i><span>课表安排</span></a></a></li>
+                <li><a href="{% url 'forum' %}"><i class="lnr lnr-envelope"></i> <span>浙大论坛</span></a></li>
+                <li id="menu-academico" ><a href="#"><i class="lnr lnr-layers"></i> <span> 在线测试</span> <span class="fa fa-angle-right" style="float: right"></span></a>
+                    <ul id="menu-academico-sub" >
+                        <li><a href="{% url 'online_test:subjects_teacher' %}">学生成绩</a></li>
+                        <li><a href="{% url 'online_test:problem_bank' %}">题库管理</a></li>
+                        <li><a href="{% url 'online_test:auto_test_generation' %}">试卷管理</a></li>
+
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+
+    <!--js -->
+    <script src="{% static 'online_test/js/jquery.nicescroll.js' %}"></script>
+    <script src="{% static 'online_test/js/scripts.js' %}"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{% static 'online_test/js/bootstrap.min.js' %}"></script>
+    <!-- /Bootstrap Core JavaScript -->
+    <!-- real-time -->
+
+
+    <script src="{% static 'online_test/js/menu_jquery.js' %}"></script>
+</body>
+
+</html>

@@ -1,0 +1,245 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<title>课程安排</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+	<!-- Bootstrap Core CSS -->
+	<link href="{% static 'courseArrange/css/bootstrap.min.css'%}" rel='stylesheet' type='text/css' />
+	<!-- Custom CSS -->
+	<link href="{% static 'courseArrange/css/style.css'%}" rel='stylesheet' type='text/css' />
+	<!-- Graph CSS -->
+	<link href="{% static 'courseArrange/css/font-awesome.css'%}" rel="stylesheet">
+	<link href="{% static 'courseArrange/css/iconfont.css'%}" rel="stylesheet" type="text/css" />
+	<!-- lined-icons -->
+	<link rel="stylesheet" href="{% static 'courseArrange/css/icon-font.min.css'%}" type='text/css' />
+	<!-- //lined-icons -->
+	<script src="{% static 'courseArrange/js/jquery-1.10.2.min.js'%}"></script>
+	<link rel="stylesheet" href="{% static 'courseArrange/css/calender.css'%}" type='text/css' />
+</head>
+
+<body>
+	<div class="page-container">
+		<div class="left-content">
+			<div class="inner-content">
+				<!-- header-starts -->
+				<div class="top_bg">			
+					<div class="header_top">
+						<div class="top_right">
+							<ul>
+								<li><a href="#">浙江大学教务中心</a></li>|
+								<li>{% if account.type == 0 %}
+										<a href="/basic/student">首页</a>
+										{% elif account.type == 1 %}
+										<a href="/basic/teacher_index">首页</a>
+										{% elif account.type == 2 %} 
+										<a href="/basic/admin_index">首页</a>
+										{% endif %}</li>|
+							</ul>
+						</div>
+						<div class="top_left">
+							<li class="dropdown">
+								<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="color:white">
+									<i class="fa fa-user fa-fw"></i> <i id="account_id" class="fa fa-caret-down">&nbsp;&nbsp;{{ account.account_id }}</i>
+								</a>
+								<ul class="dropdown-menu dropdown-user">
+									<li><a href="/basic/login"><i class="fa fa-sign-out fa-fw"></i>登出</a></li>
+									<li><a href="/basic/teacher_index"><i class="fa fa-cog fa-fw"></i>设置</a></li>
+								</ul>
+								<!-- /.dropdown-user -->
+							</li>
+						</div>
+						<div class="clearfix"> </div>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+				{% if account.type == 0 %}
+				{% include 'basicInfo/student_menu.html' %}
+				{% elif account.type == 1 %}
+				{% include 'basicInfo/teacher_menu.html' %}
+				{% elif account.type == 2 %}
+				{% include 'basicInfo/admin_menu.html' %}
+				{% endif %}
+				
+				<!-- //header-ends -->
+
+				<!--content-->
+				<div class="content">
+					<span class="switchView">列表视图</span>
+					<div class="women_main">
+
+						<!-- start content -->
+						<table>
+							<thead>
+								<tr>
+									<th>周一</th>
+									<th>周二</th>
+									<th>周三</th>
+									<th>周四</th>
+									<th>周五</th>
+									<th>周六</th>
+									<th>周日</th>
+								</tr>
+							</thead>
+							<tbody id="">
+
+							</tbody>
+						</table>
+						<div class="pages"></div>
+						<div class="black-fore" disabled></div>
+						<div class="clearfix"></div>
+						<!-- end content -->
+
+						<div class="footer">
+
+							<div class="clearfix"> </div>
+							<p>Copyright &copy; 2016.Company name All rights reserved.
+
+							</p>
+						</div>
+					</div>
+
+				</div>
+				<!--content-->
+			</div>
+		</div>
+		<!--//content-inner-->
+		<!--/sidebar-menu-->
+		
+		<div class="clearfix"></div>
+	</div>
+	</div>
+	<script src="{% static 'courseArrange/js/message.js'%}"></script>
+	<script>
+		var toggle = true;
+
+		$(".sidebar-icon").click(function () {
+			if (toggle) {
+				$(".page-container").addClass("sidebar-collapsed").removeClass("sidebar-collapsed-back");
+				$("#menu span").css({ "position": "absolute" });
+			}
+			else {
+				$(".page-container").removeClass("sidebar-collapsed").addClass("sidebar-collapsed-back");
+				setTimeout(function () {
+					$("#menu span").css({ "position": "relative" });
+				}, 400);
+			}
+
+			toggle = !toggle;
+		});
+	</script>
+	<!--js -->
+
+	<!-- /real-time -->
+	<script>
+		const period_const = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
+		const period_realTime = [
+			["8:00", "8:45"],
+			["8:50", "9:35"],
+			["9:50", "10:35"],
+			["10:40", "11:25"],
+			["13:15", "14:00"],
+			["14:05", "14:50"],
+			["14:55", "15:40"],
+			["15:55", "16:40"],
+			["16:45", "17:30"],
+			["18:30", "19:15"],
+			["19:20", "20:05"],
+			["20:10", "20:55"]
+		];
+		/*function getData() {
+			return {
+				"C00001": { period: { 2: [0, 1, 2], 3: [7, 8, 9] }, aName: "基础设施", cName: "玉泉教2-512" },
+				"F00001": { period: { 3: [0, 1, 2], 6: [2, 3] }, aName: "基础设施建设Ⅱ", cName: "玉泉教7-512" },
+			};
+		}*/
+		function buildTable(data) {
+			const dataIndexr = {};
+
+			let rowSpan = [0, 0, 0, 0, 0, 0, 0];
+			let _data = [[], [], [], [], [], [], []];
+			for (let _class in data) {
+
+				for (let day in data[_class].period) {
+				let last = -10;
+				let workon = -1;
+				
+				data[_class].period[day].map((c) => {
+					if (c - last == 1) {
+						_data[day - 1][workon].span++;
+					} else {
+						workon = c;
+						_data[day - 1][workon] = { ...data[_class], span: 1 };
+					}
+					last = c;
+				})
+			}
+			}
+			console.log(_data);
+			for (let i = 0; i < 12; i++) {
+				let trd = `<tr>`;
+				for (let j = 0; j < 7; j++) {
+					if (_data[j][i]) {
+						rowSpan[j] = _data[j][i].span;
+						trd += `<td rowspan="${_data[j][i].span}"><h4>${_data[j][i].course_name}</h4>
+						${_data[j][i].room_name}<br>
+						(${period_realTime[i][0]}-${period_realTime[i + rowSpan[j] - 1][1]})
+						</td>`;
+					}
+					else {
+						if (rowSpan[j] <= 0) trd += `<td></td>`;
+					}
+					rowSpan[j]--;
+				}
+				trd += `</tr>`;
+				$("tbody").append(trd);
+			}
+		}
+		const prefix = "http://127.0.0.1:8000/course_arrange";
+		function urlMap(filter) {
+			if (window.location.href.split("?").length < 2) return {};
+			const res = {};
+			window.location.href.split("?")[1].split("&").filter(filter ? filter : () => true).map(e => res[e.split("=")[0]] = e.split("=")[1]);
+			return res;
+		}
+		function getUser() {
+			const id = urlMap()['teacher_id'];
+			if (id) {
+				getData({ teacher_id: id });
+				return;
+			}
+			new Promise((resolve, reject) => {
+				resolve({ teacher_id: '1' });
+			}).then(data => getData(data));
+		}
+		getUser();
+		function getData(param) {
+			param.isteacher = true;
+			new Promise(function (resolve, reject) {
+				$.ajax(
+					{
+						method: "GET",
+						url: prefix + "/api/scheduling/course/",
+						data: param,
+						success: (data) => { resolve(data) },
+						error: (data) => {
+							message.error("连接失败！请稍后再试。");
+						}
+					}
+				);
+			}).then((data) => buildTable(data));
+		}
+		$(".switchView").click(() => {
+			window.location.href = "../arrangement/" + (window.location.href.split("?")[1] ? "?" + window.location.href.split("?")[1] : "");
+		});
+	</script>
+	<script src="{% static 'courseArrange/js/menu_jquery.js'%}"></script>
+	<script src="{% static 'courseSelect/js/bootstrap.min.js' %}"></script>
+
+</body>
+
+</html>

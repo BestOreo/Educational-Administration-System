@@ -1,0 +1,151 @@
+
+{% extends 'basicInfo/teacher_base.html' %}
+{% load staticfiles %}
+
+{% block body %}
+            
+<!-- Custom CSS -->
+<!-- content -->
+<div class="content">
+    <div id="page-wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">开班申请</h1>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <form role="form" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+						<form role="form">
+                        <form action="/teacher/student_comment" method="get">
+                            <div class="form-group">
+                                <select class="form-control" name="metric" id="course_list" onChange="c_change()">
+                                </select>
+                            </div>
+                        </form>
+                </form>
+                </div>
+                <div class="form-group">
+                    <label for="disabledSelect">课程名称</label>
+                    <input name="cour_name" id="cour_name" type="text" class="form-control" aria-describedby="basic-addon2" disabled value={{cour_name}}>
+                </div>
+                <div class="form-group">
+                    <label for="disabledSelect">课程容量</label>
+                    <input name="capacity" id="capacity" type="number" class="form-control" aria-describedby="basic-addon2" value={{capacity}}>
+                </div>
+                <div class="clearfix"></div>
+                <button type="button" class="btn btn-default loginbutton" onClick="doApply()">确认申请</button>
+                <div class="clearfix"></div>
+            </form>
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- wrapper -->
+</div>
+<!--content-ends-->
+<script>
+	const basicUrl="http://127.0.0.1:8000/";
+    function doApply() {
+		var tid=account_id.innerText;
+		var course_select=document.getElementById("course_list");
+		var id=course_select.value;
+		var capacity=document.getElementById("capacity").value.toString();
+		console.log(id, capacity);
+		new Promise(function (resolve){
+		   $.ajax(
+			   {
+				   method: "POST",
+				   url: basicUrl+"api/teacher/opencourse",
+				   data: {
+					   account_id: tid,
+					   id: id,
+					   capacity: capacity,
+					   csrfmiddlewaretoken: '{{ csrf_token }}'
+				   },
+				   async : false,
+				   success: function (data) {
+					   resolve(data);
+					   console.log(data);
+				   }
+
+			   }
+		   )
+		}).then(
+			function (data) {
+				console.log(data);
+				if(data.success)
+				{
+					alert("申请成功")
+				}
+				else{
+					alert(data.reason)
+				}
+
+			}
+
+		);
+	}
+</script>
+ <script>
+	function c_change(){
+		var course_select=document.getElementById("course_list");
+		var c_id=course_select.value;
+		var url = basicUrl + "api/admin/acceptedCourse?course_id=" + c_id;
+        new Promise(function (resolve){
+           $.ajax(
+               {
+                   method: "GET",
+                   url: url,
+                   data: {
+                   },
+                   async : false,
+                   success: function (data) {
+                        resolve(data);
+                   }
+
+               }
+           )
+            }).then(
+                function (data) {
+                    console.log(data);
+					cour_name.value = data.name;
+                }
+            );
+	}
+	
+</script> 
+<script>
+    $(document).ready(function () {
+        course_id_list();
+    });
+    function course_id_list() {
+        var url = basicUrl + "api/admin/listCourseAcceptedId";
+        new Promise(function (resolve){
+           $.ajax(
+               {
+                   method: "GET",
+                   url: url,
+                   data: {
+                   },
+                   async : false,
+                   success: function (data) {
+                        resolve(data);
+                   }
+
+               }
+           )
+            }).then(
+                function (data) {
+                    console.log(data);
+					var text = "<option value=\"-1\" selected=\"true\" disabled=\"true\">课程代号</option>\n";
+                    for(var i=0;i<data.length;i++){
+                        text = text + "<option value=\""+data[i].course_id+"\">"+data[i].course_id+"</option>\n"
+                    }
+					var cour_list=document.getElementById("course_list");
+					cour_list.innerHTML = text;
+                }
+            );
+    }
+</script>
+{% endblock %}
